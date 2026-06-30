@@ -1,0 +1,8 @@
+{
+  "name": "ai-testing-standards",
+  "description": "Tier-disciplined, anti-fake-test standards for AI coding agents: a testing doctrine skill (real-boundary tiers, E2E>integration>unit, testability-first/headless precondition, nondeterminism-for-resilience, seam-table plans, anti-mock rules) and an independent adversarial reviewer/triage agent. Framework-agnostic; reads a repo-local .claude/testing-context.md for house specifics.",
+  "author": { "name": "James Reyes" },
+  "license": "MIT",
+  "homepage": "https://github.com/jlreyes/ai-testing-standards",
+  "keywords": ["testing", "tdd", "e2e", "integration", "test-review", "adversarial", "agents", "claude-code", "mocking", "resilience"]
+}

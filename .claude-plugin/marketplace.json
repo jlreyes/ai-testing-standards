@@ -1,0 +1,12 @@
+{
+  "name": "ai-testing-standards",
+  "owner": { "name": "James Reyes" },
+  "description": "Testing doctrine + an independent adversarial test-review/triage agent for AI coding.",
+  "plugins": [
+    {
+      "name": "ai-testing-standards",
+      "source": "./",
+      "description": "General testing doctrine skill + the test-adversary agent (Sonnet 5)."
+    }
+  ]
+}

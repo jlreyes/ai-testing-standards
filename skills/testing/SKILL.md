@@ -22,9 +22,10 @@ filename convention, where each tier runs, what NOT to flag) live in the repo's
 
 ## The one rule
 
-Every test must exercise the **real behavior it claims to**, at the **outermost real boundary
-that's affordable**. Prove each behavior **once**, at the highest affordable tier. A test that
-mocks the thing it claims to test is fake.
+Every test must be able to **fail for a real reason** — it exists to catch a real defect in the
+real behavior it claims to cover. Put it at the **outermost real boundary** where that holds. A
+test that can't fail for a real reason — or that mocks the thing it claims to test — is **worse
+than no test**: it bills you forever and tells you you're safe when you're not.
 
 ## Testability-first (the upstream precondition)
 
@@ -62,12 +63,20 @@ Name a test by the **outermost real boundary** it exercises. Mock that boundary 
 mislabeled or fake. *A test that mocks all its boundaries is a unit test, whatever its
 filename says.*
 
-## Hierarchy & bias: E2E > Integration > Unit
+## Where a test belongs: E2E > Integration > Unit
 
-Each lower tier must **justify why the tier above can't cover it**. No integration test if e2e
-covers the seam; no unit test if integration covers the logic. Lower tiers fill only the gaps
-the tier above can't reach — speed, determinism for pure logic, edge cases. **Bias up.** The
-enemy isn't unit tests; it's *low-value* ones (tautological, over-mocked, redundant).
+Put each test at the tier where a real defect makes it go **red**. Higher tiers dominate because
+they touch the real wiring — that's where the defects that actually hurt live. Glue and
+orchestration code unit-tested in isolation usually *can't* fail for a real reason: the mock
+returns what you told it to, forever.
+
+This is an **investigation, not an argument.** "Can I justify a unit test here?" always finds a
+yes. Ask instead: *if the real behavior broke, would this test catch it?* If the honest answer is
+no, it's at the wrong tier or shouldn't exist. A test being *easy* to write is not evidence it's
+worth keeping — distrust "it's simpler to test it down here."
+
+The enemy isn't a tier — it's a test that can't fail for a real reason, and that rots at **every**
+tier (a mock-heavy "integration" test is no better than a tautological unit one).
 
 ## Determinism vs. flakiness (a different axis from the tier)
 
@@ -81,13 +90,17 @@ enemy isn't unit tests; it's *low-value* ones (tautological, over-mocked, redund
   assertions = good; nondeterministic *pass/fail for the same behavior* = flaky = bad. Never
   assert an **exact** value against a nondeterministic output — assert the invariant.
 
-## What "affordable" means
+## The real cost of a test isn't running it — it's lying to you
 
-Cost = wall-clock (vs. the tier's feedback loop) + money (tokens/API/CI minutes) + setup &
-maintenance. Weigh it against the **marginal confidence the test uniquely adds**. A test is
-"unaffordable" **only** when a lower tier already proves the same behavior. Slow /
-nondeterministic / hard-to-set-up are **not** reasons to drop to a faker tier — they're
-reasons not to *duplicate*.
+Every test you keep runs forever, is maintained forever, and its green checkmark gets read as
+"this works." A test that can't fail for a real reason pays none of that back — you carry its cost
+*and* it manufactures the feeling of safety while covering nothing. That false confidence is the
+expensive part, far more than CI minutes.
+
+**Affordability is a weak, secondary concern.** Run-cost is a reason not to *duplicate* coverage
+you already have at a higher tier — never a reason to write a cheaper test that proves less. The
+question is never "is this cheap enough to run?" but *"does it earn its forever-cost by catching a
+real defect?"* If you can't name the defect it catches, delete it.
 
 ## The test plan IS the rubric — write it FIRST
 

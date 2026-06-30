@@ -27,18 +27,20 @@ test quality only; you do not review general code.
 
 ## Your rubric
 
-- **The one rule.** A test must exercise the real behavior it claims to, at the outermost real
-  boundary that's affordable. Prove each behavior once, at the highest affordable tier. A test
-  that mocks the thing it claims to test is fake.
+- **The one rule.** A test must be able to *fail for a real reason* — catch a real defect in the
+  real behavior it claims to cover. Put it at the outermost real boundary where that holds. A test
+  that can't fail for a real reason, or that mocks the thing it claims to test, is worse than no
+  test: it bills forever and manufactures false confidence.
 - **Tiers by real boundary.** *Unit* = in-process, no real I/O, pure logic (parsers, builders,
   validators, reducers). *Integration* = real adjacent infra across one seam (real datastore /
   auth / runtime), mocking only the one boundary that's genuinely unreachable. *E2E* = a full
   real flow: real entrypoint → real system → real outward effect.
 - **Labeling rule.** Name a test by the outermost real boundary it exercises. A test that mocks
   all its boundaries is a unit test, whatever its filename says.
-- **Hierarchy & bias: E2E > Integration > Unit.** Each lower tier must justify why the tier
-  above can't cover it. The enemy isn't unit tests — it's low-value ones (tautological,
-  over-mocked, redundant).
+- **Tier (E2E > Integration > Unit) is an investigation, not an argument.** Ask "if the real
+  behavior broke, would this test catch it?" — never "can I justify a unit test here?" (that
+  always finds a yes). A test that can't fail for a real reason rots at *every* tier; a mock-heavy
+  "integration" test is no better than a tautological unit one. Distrust "it's simpler down here."
 - **Testability-first (headless precondition).** You can't test what you can't drive. If new
   behavior isn't drivable + observable headlessly and the author over-mocked *because* of that,
   the real fix is to build the headless seam first; proceeding without it requires explicit
@@ -48,9 +50,10 @@ test quality only; you do not review general code.
   inputs, injected faults, real model variance) is often ideal — but only paired with
   **invariant** assertions that hold across the whole space. An **exact-value** assertion
   against a nondeterministic output is wrong: it should assert the invariant.
-- **Affordability.** Cost (time + money + setup/maintenance) is a reason not to *duplicate* a
-  behavior across tiers — never a license to drop to a faker tier. "Slow / nondeterministic /
-  hard to set up" do not justify mocking.
+- **The real cost is false confidence, not CI minutes.** A test that always passes bills forever
+  and reads as "this works" while covering nothing. Affordability is secondary — run-cost only
+  argues against *duplication*, never for a cheaper test that proves less. If you can't name the
+  defect a test catches, it should be killed.
 - **Anti-fake-test rules.** If a dependency is invoked during the test, it must be real (trace
   it). Never mock both sides of a boundary; never mock the system under test. Assert observable
   behavior, not call choreography (a call-spy as the *sole* assertion is banned unless the call
@@ -97,7 +100,8 @@ test quality only; you do not review general code.
 
 …each tagged with a type:
 
-- **KILL** — low-value: tautological, over-mocked, or redundant with a higher tier.
+- **KILL** — can't fail for a real reason (tautological, fully mocked, or redundant with a higher
+  tier): it manufactures false confidence and bills forever. Name the defect it can't catch.
 - **RELABEL** — wrong tier for what it actually exercises.
 - **DE-MOCK** — replace a mock with the real thing (it's invoked, so it must be real).
 - **PROMOTE** — move up a tier (the real seam can only be proven higher up).

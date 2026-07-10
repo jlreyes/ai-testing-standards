@@ -127,6 +127,47 @@ how the test **fails for the right reason**.
 - Every test must be able to **FAIL for the right reason** — no tautologies. Confirm it goes
   red when the behavior breaks.
 
+## Concurrency is a seam
+
+If the code under test has **more than one writer** on shared state — including N instances
+of the same stateless code (serverless functions, workers, replicas: the instance count is
+always N, whatever the code looks like locally) — then **interleavings are a seam** and the
+seam table must carry an *interleaving control* row: the real mechanism a test uses to force
+an ordering. Examples: the test's own connection holds the same database lock the code
+takes (lock-grant order makes the race deterministic); a test-controlled barrier the design
+exposes; direct datastore edits to stage a mid-flight state (*state injection*, which is not
+mocking).
+
+Two consequences:
+
+- **Testability-first applies to interleavings.** If the coordination design offers no
+  externally holdable/drivable control point, the races are untestable-for-real and unit
+  tests with fakes will be the only option — that is a **design defect** to flag (same
+  standing as a missing headless seam), not a mocking opportunity. Designs that serialize
+  through a nameable point (a lock, a queue, a single writer) are testable; designs that
+  scatter optimistic compensation across interleavings are not.
+- **Product concurrency ≠ test flakiness.** A race in the *test harness* is a flakiness bug
+  (see above, banned). A race in the *product* is behavior to pin with a deterministic,
+  interleaving-controlled test. Don't let the first rule talk you out of the second.
+
+## Every fixed defect gets a pinning test
+
+A review finding or bug you fix is a defect that **actually happened** — the strongest
+possible evidence a test is worth its forever-cost. Each fix lands with a **pinning test at
+the tier where the defect lives**, or an explicit one-line rationale why a test is
+wrong-tier/impossible. Track the mapping (finding → test or rationale) in the feature's
+artifact and reconcile it at done-time — together with every test the plan *promised*: a
+promised test either exists or has a logged reason it doesn't. Fix waves that land
+"test-free" are how the same defect class returns in the next review round.
+
+## Gates run on the FINAL diff
+
+Review gates (the test-adversary, code review) are not a mid-stream checkpoint you pass
+once. After any material fix wave — post-review fixes, an external reviewer's round — the
+gates run **again on the final diff**. A wave of source-only fixes does not exempt itself
+because "it didn't touch tests"; source-only fix waves are exactly where untested behavior
+change concentrates.
+
 ## Convergence (stateful code)
 
 Sessions, tool/agent loops, streaming, reconnect/resume, auth lifecycles need a

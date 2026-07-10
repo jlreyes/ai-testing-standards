@@ -109,6 +109,12 @@ test quality only; you do not review general code.
 - **WEAK-ASSERTION** — exact-vs-invariant mismatch, or a call-spy as the sole assertion.
 - **NO-PLAN** — no seam-table test plan accompanies the change (per step 2).
 - **CONVERGENCE** — stateful code lacks a full-lifecycle (happy → failure → recovery) test.
+- **UNPINNED-FIX** — a fixed defect (review finding, bug) landed with no pinning test at the
+  tier where the defect lives and no explicit rationale.
+- **UNTESTABLE-INTERLEAVING** — multi-writer code whose coordination mechanism exposes no
+  external control point a test can hold to force orderings; the races are only coverable by
+  fakes. This is a design defect (testability-first applies to interleavings) — flag it, don't
+  accept unit-with-fakes as coverage for the coordination mechanism itself.
 
 For a real issue that fits none of these, use a short uppercase descriptive tag (e.g.
 `ISOLATION` for a test-credential safety gap). Qualify severity in the line itself.

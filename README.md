@@ -41,9 +41,24 @@ inherit the writer's rationalizations. Two modes:
 - **Review** a test plan + diff before "done" → reports issues, tagged
   `KILL` / `RELABEL` / `DE-MOCK` / `PROMOTE` / `SEAM-MISSING` / `WEAK-ASSERTION`. It **never
   approves** — silence means clean.
-- **Triage** a failing test → a binding verdict (`FIX_IMPLEMENTATION` / `UPDATE_TEST` /
+- **Triage** a proposed change to a failing test, or a decision to proceed despite
+  failure, → a binding verdict (`FIX_IMPLEMENTATION` / `UPDATE_TEST` /
   `ARCHITECTURAL_ISSUE`) with confidence. This is the cure for hack-it-green: the agent that
   wrote the code doesn't get to decide whether its failing test is "outdated".
+
+## Failure decisions and batching
+
+The author records a short diagnosis/action forecast before acting on a failure.
+Investigating or fixing production code while preserving the failing test does
+not require a separate triage call; independent review before done still does.
+Any proposed change to the failing test or its setup, or proceeding with an
+unresolved failure, requires independent triage. An initially uncertain
+classification never exempts a later test change.
+
+Keep the forecast out of the reviewer's initial context, then compare it with
+the independent verdict. Batch related failures and material implementation
+waves; don't rerun review for bookkeeping or unchanged evidence. The canonical
+procedure is [the testing skill](skills/testing/SKILL.md#failure-handling-and-independent-triage).
 
 ## Install
 
@@ -82,10 +97,22 @@ where each tier runs, and list the house patterns it must **not** flag):
 
 ## Use the agent
 
-- **Review (gate before done):** *"Use the test-adversary agent to review the test changes on
-  this branch."*
-- **Triage (on a red test):** *"A test failed — use the test-adversary agent to triage it,"*
-  and pass it the failure output plus what changed.
+- **Review (gate before done):** *"Use an independent test-adversary review of this branch
+  before done, including source-only changes that affect tested behavior."*
+- **Triage (before changing a red test or proceeding despite failure):** *"A test failed — use the test-adversary agent to triage it,"*
+  and pass it the original failure output, intended contract, test and implementation
+  revisions/diff, and proposed change. Production fixes that preserve the failing
+  test proceed to the normal mandatory independent review.
+
+### Codex and other runtimes
+
+If no native test-adversary role is registered, start an available independent
+reviewer with no inherited conversation. Give it the test and implementation
+paths/revisions/diff, raw failure output, and intended contract, and ask it to
+load `skills/testing/SKILL.md` and `agents/test-adversary.md`. Exclude the
+forecast-containing artifact sections/files and diff hunks until its first
+verdict. Self-review does not satisfy this gate; if no independent reviewer is
+available, leave the gate outstanding and report the missing mechanism.
 
 ## License
 

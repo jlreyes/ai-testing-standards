@@ -2,7 +2,7 @@
 name: testing
 description: >
   Testing doctrine for AI coding agents — real-boundary tier definitions
-  (unit/integration/e2e), the E2E>integration>unit hierarchy, the testability-first
+  (unit/integration/e2e), the real-boundary tier hierarchy, the testability-first
   (headless) precondition, nondeterminism-for-resilience, the seam-table test plan, and
   the anti-fake-test rules. Use whenever writing, reviewing, planning, changing, or
   debugging tests, or deciding what kind of test to write. Tool/substrate specifics live in
@@ -175,8 +175,38 @@ Sessions, tool/agent loops, streaming, reconnect/resume, auth lifecycles need a
 the seam. One-op-at-a-time tests miss the bug; a run of sequential "fix" commits on one seam
 is the signal you're missing it.
 
-## When a test fails: STOP
+## Failure handling and independent triage
 
-Don't fix it in the same breath you wrote it. Invoke the **test-adversary** agent (triage)
-with the failure output + what changed, and follow its verdict; don't override it without
-owner approval.
+Before acting on a failure, record a short forecast in the existing test artifact:
+`diagnosis: product defect | test defect | expected red | unknown; next action:
+investigate product | fix product | change test | proceed with failure; evidence: ...`.
+Keep forecasts in a separate author-only section or file. Exclude that storage, its
+sections, and its diff hunks from the reviewer's initial inputs; do not pass an entire
+artifact that exposes the forecast. Preserve the original failure output and test
+revision. This record needs no separate agent call and is a prediction, not permission
+to change the test.
+
+- **Investigate or fix production code:** proceed while preserving the failing test and
+  its expectations. An expected red before implementation does not need a separate
+  triage call. Include the resulting implementation and tests in mandatory independent
+  review before done.
+- **Change the failing test or proceed despite failure:** invoke independent triage
+  before accepting any change to that test, its assertions, fixtures, mocks, skips,
+  timeouts, or execution/coverage gates, or treating the unresolved failure as acceptable.
+  Supply the original output, test and implementation revisions/diff, intended contract,
+  and proposed change. A draft patch may be inspected, but cannot become the accepted
+  fix before the verdict. Follow the verdict; overriding it requires owner approval.
+- **Uncertain diagnosis:** investigate without changing the failing test. Any later test
+  or test-setup change returns to the preceding triage case, regardless of the original
+  forecast. Uncertainty never permits bypassing review.
+
+Use a fresh review context without the author's conversation or forecast. The reviewer
+forms a verdict from the raw evidence and contract first; then compare that verdict with
+the recorded forecast and note substantive disagreements or newly discovered evidence.
+If the runtime has no named test-adversary role, use an available independent reviewer
+with this skill and the test-adversary rubric. If independent review is unavailable,
+report the missing gate instead of accepting a test change or proceeding with failure.
+
+Independent review remains mandatory. Batch related findings and implementation waves
+into meaningful review scopes; do not repeat it for bookkeeping or unchanged evidence.
+A materially changed test, implementation, or contract reopens the affected review scope.

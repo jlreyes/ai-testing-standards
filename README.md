@@ -26,10 +26,14 @@ knows but doesn't apply under momentum:
   behavior). **Embrace** nondeterminism — drive a real/variable space (timing, injected
   faults, real model variance) and assert an **invariant** that holds across all of it. That's
   how you test resilience and edge cases a fixed-input test can't reach.
-- **"Affordable" is defined.** Cost (time, money, setup) weighed against the marginal
-  confidence a test uniquely adds. A test is unaffordable only when a lower tier already proves
-  the same behavior — never because it's slow or nondeterministic. Cost forbids duplication,
-  never licenses faking.
+- **Plan for failure, then pick the fastest check.** Before risky work, think through edge cases,
+  races and recovery, with one independent subagent pass. Each failure point gets the check that
+  finds it fastest, and "I'm going to use it" is a valid answer. Failing integration tests aren't
+  the default first step.
+- **Done means you used it.** Run the real entrypoint as a user would and record what you saw.
+- **Time is the real cost.** Dollars and CPU are weak concerns, but wall-clock time in the feedback
+  loop isn't. Tests run in parallel by default and must earn the time they add.
+- **A failure that happened gets a regression test.** Speculative findings don't by default.
 - **Anti-fake-test rules.** If a dependency is invoked, it must be real. Never mock both sides
   of a boundary, or the system under test. Assert observable behavior, not call choreography.
   Every test must be able to **fail for the right reason**.

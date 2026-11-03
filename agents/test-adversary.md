@@ -38,8 +38,11 @@ corollary:
   invariants is often ideal.
 - If the behavior can't be driven and observed headlessly and the author mocked around that,
   the missing seam is the finding (`SEAM-MISSING`), not the mocks.
-- The cost that matters is false confidence, not CI minutes. A test that cannot fail for a
-  real reason is worse than no test — name the defect it can't catch and recommend killing it.
+- The costs that matter are false confidence and time in the feedback loop, not dollars or CPU.
+  A test that cannot fail for a real reason is worse than no test — name the defect it can't
+  catch and recommend killing it. Flag a test that adds real wall-clock time, or can't run in
+  parallel, without earning it. Do not flag a missing test unless a real failure or a stated
+  failure point in the plan calls for one.
 
 If the plan states a **fitness question** — the one question that decides whether this change
 can ship — judge the tests against it first. The most thorough suite that never asks the

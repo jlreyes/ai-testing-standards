@@ -3,8 +3,8 @@ name: testing
 description: >
   Testing doctrine for AI coding agents — real-boundary tier definitions
   (unit/integration/e2e), the real-boundary tier hierarchy, the testability-first
-  (headless) precondition, nondeterminism-for-resilience, the seam-table test plan, and
-  the anti-fake-test rules. Use whenever writing, reviewing, planning, changing, or
+  (headless) precondition, failure planning before building, using the change before
+  calling it done, nondeterminism-for-resilience, and the anti-fake-test rules. Use whenever writing, reviewing, planning, changing, or
   debugging tests, or deciding what kind of test to write. Tool/substrate specifics live in
   the repo's .claude/testing-context.md. The test-adversary agent judges against this file.
 ---
@@ -97,21 +97,44 @@ Every test you keep runs forever, is maintained forever, and its green checkmark
 *and* it manufactures the feeling of safety while covering nothing. That false confidence is the
 expensive part, far more than CI minutes.
 
-**Affordability is a weak, secondary concern.** Run-cost is a reason not to *duplicate* coverage
-you already have at a higher tier — never a reason to write a cheaper test that proves less. The
-question is never "is this cheap enough to run?" but *"does it earn its forever-cost by catching a
-real defect?"* If you can't name the defect it catches, delete it.
+**Money and CPU are weak concerns. Time is not.** Every minute in the feedback loop delays every
+fix behind it, so each test must earn the wall-clock time it adds. Tests run in parallel by
+default: no shared state, fixed ports, or fixed paths. A test that can't run in parallel must say
+why. Judge a gate by its wall-clock time, not its summed test time. Time is never a reason to write
+a cheaper test that proves less; ask *"does it earn its forever-cost by catching a real defect?"*
+If you can't name the defect it catches, delete it.
 
-## The test plan IS the rubric — write it FIRST
+## Plan for failure before you build
 
-Before writing tests, fill the seam table (home: the feature's plan/artifact, plus a one-line
-"real vs mocked" header in the test file). Write the tests **failing first**, then implement.
+For a change that holds state, runs concurrently, crosses a process or service boundary, touches
+credentials, or deploys or recovers something, work out how it can fail before writing it: edge
+cases, races, partial failure, recovery, and contracts with other components.
 
-| Seam | Tier | Real | Mocked | Why mocked (must be genuinely unreachable) |
-| ---- | ---- | ---- | ------ | ------------------------------------------ |
+Have one strong independent subagent attack the plan before you implement: give it the goal, the
+design, and the relevant code, and ask what breaks. Keep this to a single pass of a few minutes. Skip
+it for small, local changes, and do the pass yourself where subagents aren't available.
 
-Also state the **behavior under test**, any **invariant** under nondeterministic input, and
-how the test **fails for the right reason**.
+Then choose a check for each failure point. Use the one that finds that kind of failure fastest:
+
+| Failure point | Check to reach for first |
+| ------------- | ------------------------ |
+| Contract with a real service or another component | Use it for real; a recorded contract test for behavior you've already seen |
+| Logic in the code you're writing | A small targeted test, or code review |
+| Race or ordering | A deterministic test that controls the interleaving |
+| Recovery or partial failure | Inject the fault through the real component and watch it recover |
+| Environment or setup | A quick preflight check |
+
+"I'm going to use it" is a valid answer. A failing integration test is not the default first step;
+write a test first only when that is the fastest way to see the failure.
+
+When you do write a test that crosses a boundary, add a one-line "real vs mocked" header to the test
+file, and be able to say how it fails for the right reason.
+
+## Done means you used it
+
+Before calling a change done, run the real entrypoint as a user would and record what you did and
+what you saw. Passing tests don't replace this. If you can't, because a headless seam is missing or
+the step needs the owner, say so plainly instead of calling it done.
 
 ## Anti-fake-test rules (non-negotiable)
 
@@ -132,7 +155,7 @@ how the test **fails for the right reason**.
 If the code under test has **more than one writer** on shared state — including N instances
 of the same stateless code (serverless functions, workers, replicas: the instance count is
 always N, whatever the code looks like locally) — then **interleavings are a seam** and the
-seam table must carry an *interleaving control* row: the real mechanism a test uses to force
+plan must name an *interleaving control*: the real mechanism a test uses to force
 an ordering. Examples: the test's own connection holds the same database lock the code
 takes (lock-grant order makes the race deterministic); a test-controlled barrier the design
 exposes; direct datastore edits to stage a mid-flight state (*state injection*, which is not
@@ -150,28 +173,22 @@ Two consequences:
   (see above, banned). A race in the *product* is behavior to pin with a deterministic,
   interleaving-controlled test. Don't let the first rule talk you out of the second.
 
-## Every fixed defect gets a pinning test
+## A failure that happened gets a regression test
 
-A review finding or bug you fix is a defect that **actually happened** — the strongest
-possible evidence a test is worth its forever-cost. Each fix lands with a **pinning test at
-the tier where the defect lives**, or an explicit one-line rationale why a test is
-wrong-tier/impossible. Track the mapping (finding → test or rationale) in the feature's
-artifact and reconcile it at done-time — together with every test the plan *promised*: a
-promised test either exists or has a logged reason it doesn't. Fix waves that land
-"test-free" are how the same defect class returns in the next review round.
+A bug you hit, or a review finding you can reproduce, is a defect that **actually happened**: the
+strongest evidence a test is worth its forever-cost. That fix lands with a regression test at the
+tier where the defect lives, or a one-line rationale why a test is wrong-tier or impossible. A
+speculative finding with no observed or reproducible failure doesn't need a test by default.
 
-## Gates run on the FINAL diff
+## Gates run once on the final diff
 
-Review gates (the test-adversary, code review) are not a mid-stream checkpoint you pass
-once. After any material fix wave — post-review fixes, an external reviewer's round — the
-gates run **again on the final diff**. A wave of source-only fixes does not exempt itself
-because "it didn't touch tests"; source-only fix waves are exactly where untested behavior
-change concentrates.
+Run review gates (the test-adversary, code review) once on the final diff before merge, not after
+every round of fixes. Run them again only when a later fix materially changes behavior.
 
 ## Convergence (stateful code)
 
 Sessions, tool/agent loops, streaming, reconnect/resume, auth lifecycles need a
-**full-lifecycle** test: happy → failure/disconnect → recovery, with **real** components at
+**full-lifecycle** check, by test or by using it: happy → failure/disconnect → recovery, with **real** components at
 the seam. One-op-at-a-time tests miss the bug; a run of sequential "fix" commits on one seam
 is the signal you're missing it.
 

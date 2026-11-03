@@ -26,6 +26,8 @@ knows but doesn't apply under momentum:
   behavior). **Embrace** nondeterminism — drive a real/variable space (timing, injected
   faults, real model variance) and assert an **invariant** that holds across all of it. That's
   how you test resilience and edge cases a fixed-input test can't reach.
+- **For production code, not spikes.** A spike or prototype has one check: use the real thing and
+  record what you saw.
 - **Plan for failure, then pick the fastest check.** Before risky work, think through edge cases,
   races and recovery, with one independent subagent pass. Each failure point gets the check that
   finds it fastest, and "I'm going to use it" is a valid answer. Failing integration tests aren't

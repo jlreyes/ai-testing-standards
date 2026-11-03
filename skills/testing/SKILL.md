@@ -12,6 +12,9 @@ description: >
 
 # Testing doctrine
 
+This doctrine governs production code. A spike or prototype has one check: use the real thing and
+record what you saw. If unsure which you're in, treat it as a spike and say so.
+
 This is the standard. It exists because coding agents fail at testing in repeatable ways:
 they pad coverage with shallow unit tests, mislabel mock-heavy tests as "integration",
 over-mock until green, and edit a failing test to pass instead of finding the bug. Every rule

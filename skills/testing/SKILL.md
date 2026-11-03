@@ -4,7 +4,8 @@ description: >
   Testing doctrine for AI coding agents — real-boundary tier definitions
   (unit/integration/e2e), the real-boundary tier hierarchy, the testability-first
   (headless) precondition, failure planning before building, using the change before
-  calling it done, nondeterminism-for-resilience, and the anti-fake-test rules. Use whenever writing, reviewing, planning, changing, or
+  calling it done, nondeterminism-for-resilience, the seam table, and the anti-fake-test
+  rules. Use whenever writing, reviewing, planning, changing, or
   debugging tests, or deciding what kind of test to write. Tool/substrate specifics live in
   the repo's .claude/testing-context.md. The test-adversary agent judges against this file.
 ---
@@ -127,8 +128,14 @@ Then choose a check for each failure point. Use the one that finds that kind of 
 "I'm going to use it" is a valid answer. A failing integration test is not the default first step;
 write a test first only when that is the fastest way to see the failure.
 
-When you do write a test that crosses a boundary, add a one-line "real vs mocked" header to the test
-file, and be able to say how it fails for the right reason.
+When you do write a test that crosses a boundary, fill the seam table first (home: the feature's
+plan/artifact, plus a one-line "real vs mocked" header in the test file).
+
+| Seam | Tier | Real | Mocked | Why mocked (must be genuinely unreachable) |
+| ---- | ---- | ---- | ------ | ------------------------------------------ |
+
+Also state the **behavior under test**, any **invariant** under nondeterministic input, and
+how the test **fails for the right reason**.
 
 ## Done means you used it
 
@@ -155,7 +162,7 @@ the step needs the owner, say so plainly instead of calling it done.
 If the code under test has **more than one writer** on shared state — including N instances
 of the same stateless code (serverless functions, workers, replicas: the instance count is
 always N, whatever the code looks like locally) — then **interleavings are a seam** and the
-plan must name an *interleaving control*: the real mechanism a test uses to force
+seam table must carry an *interleaving control* row: the real mechanism a test uses to force
 an ordering. Examples: the test's own connection holds the same database lock the code
 takes (lock-grant order makes the race deterministic); a test-controlled barrier the design
 exposes; direct datastore edits to stage a mid-flight state (*state injection*, which is not
@@ -180,10 +187,13 @@ strongest evidence a test is worth its forever-cost. That fix lands with a regre
 tier where the defect lives, or a one-line rationale why a test is wrong-tier or impossible. A
 speculative finding with no observed or reproducible failure doesn't need a test by default.
 
-## Gates run once on the final diff
+## Gates run on the FINAL diff
 
-Run review gates (the test-adversary, code review) once on the final diff before merge, not after
-every round of fixes. Run them again only when a later fix materially changes behavior.
+Review gates (the test-adversary, code review) are not a mid-stream checkpoint you pass
+once. After any material fix wave — post-review fixes, an external reviewer's round — the
+gates run **again on the final diff**. A wave of source-only fixes does not exempt itself
+because "it didn't touch tests"; source-only fix waves are exactly where untested behavior
+change concentrates.
 
 ## Convergence (stateful code)
 

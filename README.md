@@ -32,7 +32,9 @@ knows but doesn't apply under momentum:
   races and recovery, with one independent subagent pass. Each failure point gets the check that
   finds it fastest, and "I'm going to use it" is a valid answer. Failing integration tests aren't
   the default first step.
-- **Done means you used it.** Run the real entrypoint as a user would and record what you saw.
+- **Done means you used it.** Capture real use and deliver reviewable evidence with the PR.
+  [Review artifacts](skills/testing/references/review-artifacts.md) covers videos, screenshots,
+  CLI transcripts, downloadable client builds, and sharing tools.
 - **Time is the real cost.** Dollars and CPU are weak concerns, but wall-clock time in the feedback
   loop isn't. Tests run in parallel by default and must earn the time they add.
 - **A failure that happened gets a regression test.** Speculative findings don't by default.

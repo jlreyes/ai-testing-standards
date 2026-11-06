@@ -6,7 +6,8 @@ description: >
   (headless) precondition, failure planning before building, using the change before
   calling it done, nondeterminism-for-resilience, the seam table, and the anti-fake-test
   rules. Use whenever writing, reviewing, planning, changing, or
-  debugging tests, or deciding what kind of test to write. Tool/substrate specifics live in
+  debugging tests, deciding what kind of test to write, or validating a change and
+  preparing its PR evidence. Tool/substrate specifics live in
   the repo's .claude/testing-context.md. The test-adversary agent judges against this file.
 ---
 
@@ -145,6 +146,15 @@ how the test **fails for the right reason**.
 Before calling a change done, run the real entrypoint as a user would and record what you did and
 what you saw. Passing tests don't replace this. If you can't, because a headless seam is missing or
 the step needs the owner, say so plainly instead of calling it done.
+
+Capture evidence during that use and deliver it with the PR: video of changed app flows,
+screenshots for visual review, a recorded CLI interaction, and a downloadable build for changed
+clients. Keep useful successful runs as well as failures. Choose evidence that lets a reviewer
+assess the change; documentation-only work does not need an unrelated app demo.
+
+Before validation, read [review artifacts](references/review-artifacts.md) for the capture and
+sharing tools. Inspect the resulting files, identify the tested revision and environment, and
+refresh affected evidence after behavior changes. Report missing evidence plainly.
 
 ## Anti-fake-test rules (non-negotiable)
 

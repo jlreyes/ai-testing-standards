@@ -6,7 +6,7 @@
     {
       "name": "ai-testing-standards",
       "source": "./",
-      "description": "General testing doctrine skill + the test-adversary agent (Sonnet 5)."
+      "description": "General testing doctrine skill + the test-adversary agent."
     }
   ]
 }

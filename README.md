@@ -43,8 +43,8 @@ knows but doesn't apply under momentum:
   Every test must be able to **fail for the right reason**.
 
 ### 2. `test-adversary` agent — the enforcement
-Runs on the calling session's model, in **its own context** with no access to the writer's
-reasoning, so it can't inherit the writer's rationalizations. Two modes:
+Runs on Opus, in **its own context** with no access to the writer's reasoning, so it can't
+inherit the writer's rationalizations. Two modes:
 
 - **Review** a test plan + diff before "done" → reports issues, tagged
   `KILL` / `RELABEL` / `DE-MOCK` / `PROMOTE` / `SEAM-MISSING` / `WEAK-ASSERTION`. It **never

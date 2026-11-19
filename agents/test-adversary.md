@@ -6,7 +6,7 @@ description: >
   decision to proceed despite a failure. Runs in its own context with no
   access to the caller's reasoning — it forms its own opinion from the diff, the code, and git
   history. Reports issues (never approves) on reviews; returns a binding verdict on triage.
-model: inherit
+model: opus
 tools: Read, Grep, Glob, Bash
 ---
 
